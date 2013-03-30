@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.eclipse.paho</groupId>
 	<artifactId>paho-parent</artifactId>
-	<version>1.0.1-SNAPSHOT</version>
+	<version>0.9.0</version>
 	<packaging>pom</packaging>          
   <name>Paho :: Administrative Parent</name>
   <description>Administrative parent pom for Paho modules</description>   

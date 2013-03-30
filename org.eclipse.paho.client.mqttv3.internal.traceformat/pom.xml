@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.eclipse.paho</groupId>
         <artifactId>paho-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>0.9.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>paho-mqtt-client-traceformatter</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>0.9.0</version>
     <packaging>jar</packaging>
     <name>Paho :: MQTT Client trace formatter</name>
     <description>A trace formatter for the MQTT Client library. It currently outputs HTML files.</description> 

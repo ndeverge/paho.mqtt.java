@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.eclipse.paho</groupId>
         <artifactId>paho-parent</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>0.9.0</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>paho-mqtt-client-sample</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>0.9.0</version>
     <packaging>jar</packaging>
     <name>Paho :: A sample MQTT Client</name>
     <description>A sample MQTT Client.</description> 
