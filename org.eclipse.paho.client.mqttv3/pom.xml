@@ -14,8 +14,19 @@
     <name>Paho :: MQTT Client library</name>
     <description>MQTT Client library</description> 
     <url>${paho.url}</url>
+
+    <properties>
+       <build.level>${maven.build.timestamp}</build.level>
+       <maven.build.timestamp.format>yyMMdd</maven.build.timestamp.format>
+    </properties>
     
     <build>
+    <resources>
+          <resource>
+              <directory>src/main/java</directory>
+              <filtering>true</filtering>
+          </resource>
+      </resources>
     <plugins>
       <plugin>
         <groupId>org.apache.felix</groupId>
@@ -30,6 +41,7 @@
             </goals>
             <configuration>
               <instructions>
+                <Build-Level>L${build.level}</Build-Level>
                 <Bundle-ClassPath>.</Bundle-ClassPath>
                 <Bundle-SymbolicName>$(maven-symbolicname);singleton:=true</Bundle-SymbolicName>
                 <Import-Package>javax.net;resolution:=optional, javax.net.ssl;resolution:=optional</Import-Package>

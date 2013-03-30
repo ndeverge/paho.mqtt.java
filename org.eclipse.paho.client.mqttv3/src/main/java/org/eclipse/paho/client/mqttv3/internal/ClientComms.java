@@ -37,8 +37,8 @@ import org.eclipse.paho.client.mqttv3.logging.LoggerFactory;
  * messages. 
  */
 public class ClientComms { 
-	public static String 		VERSION = "@@VERSION@@";
-	public static String 		BUILD_LEVEL = "@@BUILDLEVEL@@";
+	public static String 		VERSION = "${project.version}";
+	public static String 		BUILD_LEVEL = "L${build.level}";
 	
 	private IMqttAsyncClient 	client;
 	NetworkModule 				networkModule;
