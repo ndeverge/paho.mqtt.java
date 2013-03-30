@@ -1,0 +1,26 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <groupId>org.eclipse.paho</groupId>
+        <artifactId>paho-parent</artifactId>
+        <version>1.0.1-SNAPSHOT</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>paho-mqtt-client-sample</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>Paho :: A sample MQTT Client</name>
+    <description>A sample MQTT Client.</description> 
+    <url>${paho.url}</url>
+    
+    <dependencies>
+        <dependency>
+          <groupId>org.eclipse.paho</groupId>
+          <artifactId>paho-mqtt-client</artifactId>
+          <version>${project.version}</version>
+          <scope>compile</scope>
+        </dependency>
+    </dependencies>
+</project>
