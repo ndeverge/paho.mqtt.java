@@ -28,6 +28,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import android.app.Service;
@@ -110,7 +111,7 @@ class MqttConnection implements MqttCallback {
 	}
 
 	//store connect ActivityToken for reconnect
-	private String reconnectActivityToken = null;
+	private String connectActivityToken = null;
 
 	// our client object - instantiated on connect
 	private MqttAsyncClient myClient = null;
@@ -183,8 +184,9 @@ class MqttConnection implements MqttCallback {
 	public void connect(MqttConnectOptions options, String invocationContext,
 			String activityToken) {
 		
+		final String internel_invocationContext = invocationContext;
 		connectOptions = options;
-		reconnectActivityToken = activityToken;
+		connectActivityToken = activityToken;
 
 		if (options != null) {
 			cleanSession = options.isCleanSession();
@@ -255,6 +257,11 @@ class MqttConnection implements MqttCallback {
 									+ exception.getMessage());
 
 					doAfterConnectFail(resultBundle);
+
+					// if connect fail ,try reconnect.
+					if(service.isOnline()){
+						connect(connectOptions, internel_invocationContext,connectActivityToken);
+					}
 
 				}
 			};
@@ -788,6 +795,8 @@ class MqttConnection implements MqttCallback {
 					Log.getStackTraceString(why));
 		}
 		service.callbackToActivity(clientHandle, Status.OK, resultBundle);
+		service.traceDebug(TAG,"Reconnect for connection lost");
+		reconnect();
 		// client has lost connection no need for wake lock
 		releaseWakeLock();
 	}
@@ -971,7 +980,7 @@ class MqttConnection implements MqttCallback {
 			final Bundle resultBundle = new Bundle();
 			resultBundle.putString(
 				MqttServiceConstants.CALLBACK_ACTIVITY_TOKEN,
-				reconnectActivityToken);
+				connectActivityToken);
 			resultBundle.putString(
 				MqttServiceConstants.CALLBACK_INVOCATION_CONTEXT, null);
 			resultBundle.putString(MqttServiceConstants.CALLBACK_ACTION,
@@ -1001,6 +1010,10 @@ class MqttConnection implements MqttCallback {
 								resultBundle);
 
 						doAfterConnectFail(resultBundle);
+						
+						//reconnect fail , try reconnect . check network in reconnect function;
+						service.traceDebug(TAG,"Reconnect Fail,Reconnect!");
+						reconnect();
 						
 					}
 				};
