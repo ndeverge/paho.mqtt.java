@@ -141,6 +141,7 @@ class AlarmPingSender implements MqttPingSender {
 						.getSystemService(Service.POWER_SERVICE);
 				wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 						wakeLockTag);
+                                wakelock.setReferenceCounted(false);
 			}
 			wakelock.acquire();
 			token.setActionCallback(new IMqttActionListener() {
