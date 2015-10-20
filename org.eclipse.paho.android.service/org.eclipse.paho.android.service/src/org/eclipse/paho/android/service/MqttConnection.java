@@ -197,7 +197,7 @@ class MqttConnection implements MqttCallback {
 			service.messageStore.clearArrivedMessages(clientHandle);
 		}
 
-		service.traceDebug(TAG, "Connecting {" + serverURI + "} as {"+ clientId + "}");
+		service.traceDebug(TAG, "Connecting {" + serverURI + "} as {" + clientId + "}");
 		final Bundle resultBundle = new Bundle();
 		resultBundle.putString(MqttServiceConstants.CALLBACK_ACTIVITY_TOKEN,
 				activityToken);
@@ -314,7 +314,7 @@ class MqttConnection implements MqttCallback {
 		acquireWakeLock();
 		disconnected = true;
 		setConnectingState(false);
-		service.callbackToActivity(clientHandle, Status.ERROR,resultBundle);
+		service.callbackToActivity(clientHandle, Status.ERROR, resultBundle);
 		releaseWakeLock();
 	}
 	
@@ -1018,8 +1018,21 @@ class MqttConnection implements MqttCallback {
                                                   Thread.sleep(delay);
                                                 } catch(InterruptedException e) {
                                                 }
-						reconnect();
+
+						if(isNotAuthenticationFailed(exception))
+						{
+							reconnect();
+						}
 						
+					}
+
+					private boolean isNotAuthenticationFailed(Throwable throwable) {
+						int reasonCode = -1;
+						if(throwable instanceof MqttException) {
+							reasonCode = ((MqttException) throwable).getReasonCode();
+						}
+
+						return reasonCode != MqttException.REASON_CODE_FAILED_AUTHENTICATION;
 					}
 				};
 				
