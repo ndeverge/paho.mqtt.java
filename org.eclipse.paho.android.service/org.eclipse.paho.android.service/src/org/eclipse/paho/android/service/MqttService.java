@@ -296,11 +296,12 @@ public class MqttService extends Service implements MqttTraceHandler {
    * @return a string to be used by the Activity as a "handle" for this
    *         MqttConnection
    */
-  public String getClient(String serverURI, String clientId, String contextId,MqttClientPersistence persistence) {
+  public String getClient(String serverURI, String clientId, String contextId, 
+		  MqttClientPersistence persistence, MqttAuthenticationFailureHandler authFailHandler) {
     String clientHandle = serverURI + ":" + clientId+":"+contextId;
     if (!connections.containsKey(clientHandle)) {
-      MqttConnection client = new MqttConnection(this, serverURI,
-          clientId, persistence, clientHandle);
+      MqttConnection client = new MqttConnection(this, serverURI, 
+    		  clientId, persistence, clientHandle, authFailHandler);
       connections.put(clientHandle, client);
     }
     return clientHandle;
