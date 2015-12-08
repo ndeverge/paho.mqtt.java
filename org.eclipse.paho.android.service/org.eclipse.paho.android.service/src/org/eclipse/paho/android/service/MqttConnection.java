@@ -264,7 +264,7 @@ class MqttConnection implements MqttCallback {
 
 					// if connect fail ,try reconnect.
 					if(service.isOnline()){
-						if(authFailHandler.isApplicationAuthenticationFailure()) {
+						if(isAuthenticationFailure()) {
 							authFailHandler.onApplicationAuthenticationFailure();
 						} else {
 							connect(connectOptions, internel_invocationContext, connectActivityToken);
@@ -992,7 +992,7 @@ class MqttConnection implements MqttCallback {
 			resultBundle.putString(
 				MqttServiceConstants.CALLBACK_INVOCATION_CONTEXT, null);
 			resultBundle.putString(MqttServiceConstants.CALLBACK_ACTION,
-				MqttServiceConstants.CONNECT_ACTION);
+					MqttServiceConstants.CONNECT_ACTION);
 			
 			try {
 				
@@ -1027,7 +1027,7 @@ class MqttConnection implements MqttCallback {
                                                 } catch(InterruptedException e) {
                                                 }
 
-						if (authFailHandler.isApplicationAuthenticationFailure()) {
+						if (isAuthenticationFailure()) {
 							authFailHandler.onApplicationAuthenticationFailure();
 						} else {
 							reconnect();
@@ -1051,5 +1051,10 @@ class MqttConnection implements MqttCallback {
 	 */
 	synchronized void setConnectingState(boolean isConnecting){
 		this.isConnecting = isConnecting; 
+	}
+
+	private boolean isAuthenticationFailure() {
+		return (authFailHandler != null) &&
+				authFailHandler.isApplicationAuthenticationFailure();
 	}
 }
