@@ -264,7 +264,11 @@ class MqttConnection implements MqttCallback {
 
 					// if connect fail ,try reconnect.
 					if(service.isOnline()){
-						connect(connectOptions, internel_invocationContext,connectActivityToken);
+						if(authFailHandler.isApplicationAuthenticationFailure()) {
+							authFailHandler.onApplicationAuthenticationFailure();
+						} else {
+							connect(connectOptions, internel_invocationContext, connectActivityToken);
+						}
 					}
 
 				}
