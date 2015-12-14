@@ -149,6 +149,8 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	
 	private volatile boolean registerReceiver = false;
 	private volatile boolean bindedService = false;
+	
+	private MqttAuthenticationFailureHandler authFailHandler;
 
 	/**
 	 * Constructor - create an MqttAndroidClient that can be used to communicate with an MQTT server on android
@@ -163,8 +165,8 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            identified to the server
 	 */
 	public MqttAndroidClient(Context context, String serverURI,
-			String clientId) {
-		this(context, serverURI, clientId, null, Ack.AUTO_ACK);
+			String clientId, MqttAuthenticationFailureHandler authFailHandler) {
+		this(context, serverURI, clientId, null, Ack.AUTO_ACK, authFailHandler);
 	}
 
 	/**
@@ -183,8 +185,9 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            how the application wishes to acknowledge a message has been
 	 *            processed
 	 */
-	public MqttAndroidClient(Context ctx, String serverURI, String clientId, Ack ackType) {
-		this(ctx, serverURI, clientId, null, ackType);
+	public MqttAndroidClient(Context ctx, String serverURI, String clientId, Ack ackType, 
+			MqttAuthenticationFailureHandler authFailHandler) {
+		this(ctx, serverURI, clientId, null, ackType, authFailHandler);
 	}
 
 	/**
@@ -202,8 +205,9 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 * @param persistence
 	 *            The object to use to store persisted data
 	 */
-	public MqttAndroidClient(Context ctx, String serverURI, String clientId, MqttClientPersistence persistence) {
-		this(ctx, serverURI, clientId, persistence, Ack.AUTO_ACK);
+	public MqttAndroidClient(Context ctx, String serverURI, String clientId, MqttClientPersistence persistence,
+			MqttAuthenticationFailureHandler authFailHandler) {
+		this(ctx, serverURI, clientId, persistence, Ack.AUTO_ACK, authFailHandler);
 	}
 
 	/**
@@ -226,12 +230,14 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	 *            processed.
 	 */
 	public MqttAndroidClient(Context context, String serverURI,
-			String clientId, MqttClientPersistence persistence, Ack ackType) {
+			String clientId, MqttClientPersistence persistence, Ack ackType, 
+			MqttAuthenticationFailureHandler authFailHandler) {
 		myContext = context;
 		this.serverURI = serverURI;
 		this.clientId = clientId;
 		this.persistence = persistence;
 		messageAck = ackType;
+		this.authFailHandler = authFailHandler;
 	}
 
 	 /**
@@ -286,7 +292,7 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	@Override
 	public void close() {
 	 if (clientHandle == null) {
-		 clientHandle = mqttService.getClient(serverURI, clientId, myContext.getApplicationInfo().packageName,persistence);
+		 clientHandle = mqttService.getClient(serverURI, clientId, myContext.getApplicationInfo().packageName,persistence, authFailHandler);
 	 }
 	 mqttService.close(clientHandle);
 	}
@@ -452,7 +458,7 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	private void doConnect() {
 		if (clientHandle == null) {
 			clientHandle = mqttService.getClient(serverURI, clientId,myContext.getApplicationInfo().packageName,
-					persistence);
+					persistence, authFailHandler);
 		}
 		mqttService.setTraceEnabled(traceEnabled);
 		mqttService.setTraceCallbackId(clientHandle);

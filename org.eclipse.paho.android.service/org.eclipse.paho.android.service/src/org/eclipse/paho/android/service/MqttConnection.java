@@ -136,6 +136,8 @@ class MqttConnection implements MqttCallback {
 
 	private WakeLock wakelock = null;
 	private String wakeLockTag = null;
+	
+	private MqttAuthenticationFailureHandler authFailHandler;
 
 	/**
 	 * Constructor - create an MqttConnection to communicate with MQTT server
@@ -154,13 +156,15 @@ class MqttConnection implements MqttCallback {
 	 *            the "handle" by which the activity will identify us
 	 */
 	MqttConnection(MqttService service, String serverURI, String clientId,
-			MqttClientPersistence persistence, String clientHandle) {
+			MqttClientPersistence persistence, String clientHandle,
+			MqttAuthenticationFailureHandler authFailHandler) {
 		this.serverURI = serverURI.toString();
 		this.service = service;
 		this.clientId = clientId;
 		this.persistence = persistence;
 		this.clientHandle = clientHandle;
-
+		this.authFailHandler = authFailHandler;
+		
 		StringBuffer buff = new StringBuffer(this.getClass().getCanonicalName());
 		buff.append(" ");
 		buff.append(clientId);
@@ -260,7 +264,11 @@ class MqttConnection implements MqttCallback {
 
 					// if connect fail ,try reconnect.
 					if(service.isOnline()){
-						connect(connectOptions, internel_invocationContext,connectActivityToken);
+						if(isAuthenticationFailure()) {
+							authFailHandler.onApplicationAuthenticationFailure();
+						} else {
+							connect(connectOptions, internel_invocationContext, connectActivityToken);
+						}
 					}
 
 				}
@@ -984,7 +992,7 @@ class MqttConnection implements MqttCallback {
 			resultBundle.putString(
 				MqttServiceConstants.CALLBACK_INVOCATION_CONTEXT, null);
 			resultBundle.putString(MqttServiceConstants.CALLBACK_ACTION,
-				MqttServiceConstants.CONNECT_ACTION);
+					MqttServiceConstants.CONNECT_ACTION);
 			
 			try {
 				
@@ -1019,20 +1027,11 @@ class MqttConnection implements MqttCallback {
                                                 } catch(InterruptedException e) {
                                                 }
 
-						if(isNotAuthenticationFailed(exception))
-						{
+						if (isAuthenticationFailure()) {
+							authFailHandler.onApplicationAuthenticationFailure();
+						} else {
 							reconnect();
 						}
-						
-					}
-
-					private boolean isNotAuthenticationFailed(Throwable throwable) {
-						int reasonCode = -1;
-						if(throwable instanceof MqttException) {
-							reasonCode = ((MqttException) throwable).getReasonCode();
-						}
-
-						return reasonCode != MqttException.REASON_CODE_FAILED_AUTHENTICATION;
 					}
 				};
 				
@@ -1052,5 +1051,10 @@ class MqttConnection implements MqttCallback {
 	 */
 	synchronized void setConnectingState(boolean isConnecting){
 		this.isConnecting = isConnecting; 
+	}
+
+	private boolean isAuthenticationFailure() {
+		return (authFailHandler != null) &&
+				authFailHandler.isApplicationAuthenticationFailure();
 	}
 }
