@@ -39,7 +39,7 @@ public class MqttToken implements IMqttToken {
 	/*
 	 * callback ketika selesai kirim ping
 	 */
-	private IMqttActionListener pingSentCallback;
+	private IMqttPingActionListener pingSentCallback;
 		
 	public MqttToken() {
 	}
@@ -107,12 +107,12 @@ public class MqttToken implements IMqttToken {
 	/*
 	 * callback untuk ping event
 	 */
-	public void setPingCallback(IMqttActionListener callback) {
+	public void setPingCallback(IMqttPingActionListener callback) {
 		internalTok.setActionCallback(callback);
 		this.pingSentCallback = callback;
 	}
 
-	public IMqttActionListener getPingSentCallback() {
+	public IMqttPingActionListener getPingSentCallback() {
 		return pingSentCallback;
 	}
 }
