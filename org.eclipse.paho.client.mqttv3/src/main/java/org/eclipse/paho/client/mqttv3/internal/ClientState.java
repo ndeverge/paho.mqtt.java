@@ -21,6 +21,7 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -526,7 +527,7 @@ public class ClientState {
 	 * 
 	 * @return token of ping command, null if no ping command has been sent.
 	 */
-	public MqttToken checkForActivity() throws MqttException {
+	public MqttToken checkForActivity(IMqttActionListener actionListener) throws MqttException {
 		final String methodName = "checkForActivity";
 		//@TRACE 616=checkForActivity entered
 		log.fine(CLASS_NAME,methodName,"616", new Object[]{});
@@ -593,7 +594,13 @@ public class ClientState {
                     // pingOutstanding++;  // it will be set after the ping has been written on the wire                                                                                                             
                     // lastPing = time;    // it will be set after the ping has been written on the wire                                                                                                             
                     token = new MqttToken(clientComms.getClient().getClientId());
-                    tokenStore.saveToken(token, pingCommand);
+
+					//set callback di pindah dari ping sender untuk memastikan callback selalu terpanggil
+					if(actionListener != null) {
+						token.setPingCallback(actionListener);
+					}
+
+					tokenStore.saveToken(token, pingCommand);
                     pendingFlows.insertElementAt(pingCommand, 0);
 
                     nextPingTime = getKeepAlive();
@@ -771,7 +778,12 @@ public class ClientState {
                 	pingOutstanding++;
                 }
                 //@TRACE 635=ping sent. pingOutstanding: {0}                                                                                                                                                                  
-                log.fine(CLASS_NAME,methodName,"635",new Object[]{ new Integer(pingOutstanding)});
+                log.fine(CLASS_NAME, methodName, "635", new Object[]{new Integer(pingOutstanding)});
+
+				IMqttActionListener callback = token.getPingSentCallback();
+				if (callback != null) {
+					callback.onSuccess(token);
+				}
             }
         }
         else if (message instanceof MqttPublish) {

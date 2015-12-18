@@ -15,6 +15,7 @@ package org.eclipse.paho.android.service;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttPingSender;
+import org.eclipse.paho.client.mqttv3.MqttToken;
 import org.eclipse.paho.client.mqttv3.internal.ClientComms;
 
 import android.app.AlarmManager;
@@ -126,12 +127,26 @@ class AlarmPingSender implements MqttPingSender {
 			Log.d(TAG, "Ping " + count + " times.");
 
 			Log.d(TAG, "Check time :" + System.currentTimeMillis());
-			IMqttToken token = comms.checkForActivity();
 
-			// No ping has been sent.
-			if (token == null) {
-				return;
-			}
+			IMqttActionListener actionListener = new IMqttActionListener() {
+
+				@Override
+				public void onSuccess(IMqttToken asyncActionToken) {
+					Log.d(TAG, "Success. Release lock(" + wakeLockTag + "):"
+							+ System.currentTimeMillis());
+					//Release wakelock when it is done.
+					releaseWakeLock();
+				}
+
+				@Override
+				public void onFailure(IMqttToken asyncActionToken,
+									  Throwable exception) {
+					Log.d(TAG, "Failure. Release lock(" + wakeLockTag + "):"
+							+ System.currentTimeMillis());
+					//Release wakelock when it is done.
+					releaseWakeLock();
+				}
+			};
 
 			// Assign new callback to token to execute code after PingResq
 			// arrives. Get another wakelock even receiver already has one,
@@ -141,32 +156,28 @@ class AlarmPingSender implements MqttPingSender {
 						.getSystemService(Service.POWER_SERVICE);
 				wakelock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 						wakeLockTag);
-                                wakelock.setReferenceCounted(false);
+				wakelock.setReferenceCounted(false);
 			}
 			wakelock.acquire();
-			token.setActionCallback(new IMqttActionListener() {
+			Log.d(TAG, "hold wakelock(" + wakeLockTag + "):"
+					+ System.currentTimeMillis());
 
-				@Override
-				public void onSuccess(IMqttToken asyncActionToken) {
-					Log.d(TAG, "Success. Release lock(" + wakeLockTag + "):"
-							+ System.currentTimeMillis());
-					//Release wakelock when it is done.
-					if(wakelock != null && wakelock.isHeld()){
-						wakelock.release();
-					}
-				}
+			//action listener ditambahkan supaya wakelock dilepas setelah send ping.
+			IMqttToken token = comms.checkForActivity(actionListener);
 
-				@Override
-				public void onFailure(IMqttToken asyncActionToken,
-						Throwable exception) {
-					Log.d(TAG, "Failure. Release lock(" + wakeLockTag + "):"
-							+ System.currentTimeMillis());
-					//Release wakelock when it is done.
-					if(wakelock != null && wakelock.isHeld()){
-						wakelock.release();
-					}
-				}
-			});
+			// No ping has been sent.
+			if (token == null) {
+				Log.d(TAG, "no ping sent");
+				releaseWakeLock();
+				return;
+			}
+		}
+
+		private void releaseWakeLock() {
+			if(wakelock != null && wakelock.isHeld()){
+				wakelock.release();
+			}
 		}
 	}
+
 }

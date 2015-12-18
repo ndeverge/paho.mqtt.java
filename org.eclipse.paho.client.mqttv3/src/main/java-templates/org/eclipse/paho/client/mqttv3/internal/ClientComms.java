@@ -19,6 +19,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Vector;
 
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttAsyncClient;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
@@ -657,14 +658,26 @@ public class ClientComms {
 	public MqttToken checkForActivity(){
 		MqttToken token = null;
 		try{
-			token = clientState.checkForActivity();
+			token = clientState.checkForActivity(null);
 		}catch(MqttException e){
 			handleRunException(e);
 		}catch(Exception e){
 			handleRunException(e);
 		}
 		return token;
-	}	
+	}
+
+	public MqttToken checkForActivity(IMqttActionListener actionListener) {
+		MqttToken token = null;
+		try{
+			token = clientState.checkForActivity(actionListener);
+		}catch(MqttException e){
+			handleRunException(e);
+		}catch(Exception e){
+			handleRunException(e);
+		}
+		return token;
+	}
 	
 	private void handleRunException(Exception ex) {
 		final String methodName = "handleRunException";
