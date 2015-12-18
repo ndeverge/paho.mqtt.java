@@ -35,6 +35,11 @@ public class MqttToken implements IMqttToken {
 	 * MqttToken.  MQTT application programs must not use the internal class.
 	 */
 	public Token internalTok = null;
+
+	/*
+	 * callback ketika selesai kirim ping
+	 */
+	private IMqttPingActionListener pingSentCallback;
 		
 	public MqttToken() {
 	}
@@ -97,5 +102,17 @@ public class MqttToken implements IMqttToken {
 	
 	public MqttWireMessage getResponse() {
 		return internalTok.getResponse();
+	}
+
+	/*
+	 * callback untuk ping event
+	 */
+	public void setPingCallback(IMqttPingActionListener callback) {
+		internalTok.setActionCallback(callback);
+		this.pingSentCallback = callback;
+	}
+
+	public IMqttPingActionListener getPingSentCallback() {
+		return pingSentCallback;
 	}
 }
