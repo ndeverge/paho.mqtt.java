@@ -214,24 +214,19 @@ class MqttConnection implements MqttCallback {
 				
 		try {
 			if (persistence == null) {
-				// ask Android where we can put files
-				File myDir = service.getExternalFilesDir(TAG);
+				// use internal storage
+				File myDir = service.getDir(TAG, Context.MODE_PRIVATE);
 
 				if (myDir == null) {
-					// No external storage, use internal storage instead.
-					myDir = service.getDir(TAG, Context.MODE_PRIVATE);
-					
-					if(myDir == null){
-						//Shouldn't happen.
-						resultBundle.putString(
-								MqttServiceConstants.CALLBACK_ERROR_MESSAGE,
-								"Error! No external and internal storage available");
-						resultBundle.putSerializable(
-								MqttServiceConstants.CALLBACK_EXCEPTION, new MqttPersistenceException());
-						service.callbackToActivity(clientHandle, Status.ERROR,
-								resultBundle);
-						return;
-					}
+					//Shouldn't happen.
+					resultBundle.putString(
+							MqttServiceConstants.CALLBACK_ERROR_MESSAGE,
+							"Error! No external and internal storage available");
+					resultBundle.putSerializable(
+							MqttServiceConstants.CALLBACK_EXCEPTION, new MqttPersistenceException());
+					service.callbackToActivity(clientHandle, Status.ERROR,
+							resultBundle);
+					return;
 				}
 
 				// use that to setup MQTT client persistence storage

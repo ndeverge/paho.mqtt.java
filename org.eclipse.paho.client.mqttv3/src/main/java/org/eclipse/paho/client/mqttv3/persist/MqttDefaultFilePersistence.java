@@ -27,7 +27,6 @@ import java.util.Vector;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttPersistable;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
-import org.eclipse.paho.client.mqttv3.internal.FileLock;
 import org.eclipse.paho.client.mqttv3.internal.MqttPersistentData;
 
 /**
@@ -49,7 +48,6 @@ public class MqttDefaultFilePersistence implements MqttClientPersistence {
 
 	private File dataDir;
 	private File clientDir = null;
-	private FileLock fileLock = null;
 	
 	private static final FilenameFilter FILE_FILTER = new FilenameFilter() { 
 		public boolean accept(File dir, String name) { return name.endsWith(MESSAGE_FILE_EXTENSION); }
@@ -106,12 +104,6 @@ public class MqttDefaultFilePersistence implements MqttClientPersistence {
 				}
 			}
 
-			try {
-				fileLock = new FileLock(clientDir, LOCK_FILENAME);
-	 		} catch (Exception e) {
-				throw new MqttPersistenceException(MqttPersistenceException.REASON_CODE_PERSISTENCE_IN_USE);
-			}
-
 			// Scan the directory for .backup files. These will
 			// still exist if the JVM exited during addMessage, before
 			// the new message was written to disk and the backup removed.
@@ -132,11 +124,6 @@ public class MqttDefaultFilePersistence implements MqttClientPersistence {
 	public void close() throws MqttPersistenceException {
 		
 		synchronized (this) {
-			// checkIsOpen();
-			if (fileLock != null) {
-				fileLock.release();
-			}
-
 			if (getFiles().length == 0) {
 				clientDir.delete();
 			}
