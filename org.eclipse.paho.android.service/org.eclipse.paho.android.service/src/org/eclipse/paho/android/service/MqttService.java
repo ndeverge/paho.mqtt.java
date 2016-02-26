@@ -836,7 +836,14 @@ public class MqttService extends Service implements MqttTraceHandler {
 		}
 	}
 
-	/**
+    public void recycleConnection() {
+      for (MqttConnection connection : connections.values()) {
+        connection.recycleConnection();
+      }
+    }
+
+
+  /**
 	 * Detect changes of the Allow Background Data setting - only used below
 	 * ICE_CREAM_SANDWICH
 	 */

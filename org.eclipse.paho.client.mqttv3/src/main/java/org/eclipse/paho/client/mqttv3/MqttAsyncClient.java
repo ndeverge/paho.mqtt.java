@@ -883,4 +883,8 @@ public class MqttAsyncClient implements IMqttAsyncClient { // DestinationProvide
 		return new Debug(clientId,comms);
 	}
 
+	public void recycleConnection() {
+		comms.shutdownConnection(null, new MqttException(MqttException.REASON_CODE_CONNECTION_LOST,
+				new Exception("Recycle connection karena kirim message tidak sampai2")));
+	}
 }

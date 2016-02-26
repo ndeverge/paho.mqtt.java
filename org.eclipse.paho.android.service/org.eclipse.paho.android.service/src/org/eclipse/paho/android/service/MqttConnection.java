@@ -1013,7 +1013,7 @@ class MqttConnection implements MqttCallback {
 								resultBundle);
 
 						doAfterConnectFail(resultBundle);
-					        	
+
 						//reconnect fail , try reconnect . check network in reconnect function;
                                                 long delay = 1000;
 						service.traceDebug(TAG,"Reconnect Fail,Reconnect in: " + delay + " ms");
@@ -1051,5 +1051,11 @@ class MqttConnection implements MqttCallback {
 	private boolean isAuthenticationFailure() {
 		return (authFailHandler != null) &&
 				authFailHandler.isApplicationAuthenticationFailure();
+	}
+
+	public void recycleConnection() {
+		if (myClient != null) {
+			myClient.recycleConnection();
+		}
 	}
 }

@@ -1631,4 +1631,10 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 			}
 		}
 	}
+
+	public void recycleConnection() {
+		if (mqttService != null) {
+			mqttService.recycleConnection();
+		}
+	}
 }
