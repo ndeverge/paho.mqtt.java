@@ -252,6 +252,7 @@ public class MqttService extends Service implements MqttTraceHandler {
 
 	// mapping from client handle strings to actual client connections.
 	private Map<String/* clientHandle */, MqttConnection/* client */> connections = new ConcurrentHashMap<String, MqttConnection>();
+  private LogToFile logger;
 
   public MqttService() {
     super();
@@ -287,7 +288,7 @@ public class MqttService extends Service implements MqttTraceHandler {
 
   // The major API implementation follows :-
 
-  /**
+  /*
    * Get an MqttConnection object to represent a connection to a server
    *
    * @param serverURI specifies the protocol, host name and port to be used to connect to an MQTT server
@@ -594,6 +595,8 @@ public class MqttService extends Service implements MqttTraceHandler {
   public void onCreate() {
     super.onCreate();
 
+    logger = new LogToFile(this);
+
     // create a binder that will let the Activity UI send
     // commands to the Service
     mqttServiceBinder = new MqttServiceBinder(this);
@@ -693,7 +696,7 @@ public class MqttService extends Service implements MqttTraceHandler {
   @Override
   public void traceDebug(String tag, String message) {
     traceCallback(MqttServiceConstants.TRACE_DEBUG, tag, message);
-//    Log.d(tag, message);
+    // logger.write(tag, message);
   }
 
   /**

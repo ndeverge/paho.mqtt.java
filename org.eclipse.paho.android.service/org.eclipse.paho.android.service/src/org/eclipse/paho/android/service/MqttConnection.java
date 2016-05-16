@@ -16,6 +16,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.paho.android.service.MessageStore.StoredMessage;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -37,6 +38,10 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.util.Log;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.functions.Func1;
 
 /**
  * <p>
@@ -68,6 +73,8 @@ class MqttConnection implements MqttCallback {
 	private static final String TAG = "MqttConnection";
 	// Error status messages
 	private static final String NOT_CONNECTED = "not connected";
+
+	private static final long RECONNECT_DELAY = 1;
 
 	// fields for the connection definition
 	private String serverURI;
@@ -971,11 +978,11 @@ class MqttConnection implements MqttCallback {
 			return ;
 		}
 		
-		if(!service.isOnline()){
-			service.traceDebug(TAG,
-					"The network is not reachable. Will not do reconnect");
-			return;
-		}
+//		if(!service.isOnline()){
+//			service.traceDebug(TAG,
+//					"The network is not reachable. Will not do reconnect");
+//			return;
+//		}
 
 		if (disconnected && !cleanSession) {
 			// use the activityToke the same with action connect
@@ -1015,12 +1022,9 @@ class MqttConnection implements MqttCallback {
 						doAfterConnectFail(resultBundle);
 
 						//reconnect fail , try reconnect . check network in reconnect function;
-                                                long delay = 1000;
-						service.traceDebug(TAG,"Reconnect Fail,Reconnect in: " + delay + " ms");
-                                                try {
-                                                  Thread.sleep(delay);
-                                                } catch(InterruptedException e) {
-                                                }
+						service.traceDebug(TAG,"Reconnect Fail, wait for network connection");
+
+						waitUntilOnline(RECONNECT_DELAY);
 
 						if (isAuthenticationFailure()) {
 							authFailHandler.onApplicationAuthenticationFailure();
@@ -1037,6 +1041,8 @@ class MqttConnection implements MqttCallback {
 				setConnectingState(false);
 				handleException(resultBundle, e);
 			}
+		} else {
+			service.traceDebug(TAG, "not reconnect because connection state = " + disconnected + "; clean session = " + cleanSession);
 		}
 	}
 	
@@ -1057,5 +1063,18 @@ class MqttConnection implements MqttCallback {
 		if (myClient != null) {
 			myClient.recycleConnection();
 		}
+	}
+
+	private void waitUntilOnline(long delay) {
+		Observable.interval(delay, TimeUnit.SECONDS)
+				.filter(new Func1<Long, Boolean>() {
+					@Override
+					public Boolean call(Long aLong) {
+						return service.isOnline();
+					}
+				})
+				.take(1)
+				.toBlocking()
+				.single();
 	}
 }
