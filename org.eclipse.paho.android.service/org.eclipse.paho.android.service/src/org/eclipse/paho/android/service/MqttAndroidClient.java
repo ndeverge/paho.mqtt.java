@@ -94,6 +94,7 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 	private static final int BIND_SERVICE_FLAG = 0;
 
 	private static ExecutorService pool = Executors.newCachedThreadPool();
+	private static ExecutorService actionExecutor = Executors.newSingleThreadExecutor();
 
 	/**
 	 * ServiceConnection to process when we bind to our service
@@ -1265,39 +1266,51 @@ public class MqttAndroidClient extends BroadcastReceiver implements
 			return;
 		}
 
-		String action = data.getString(MqttServiceConstants.CALLBACK_ACTION);
+		actionExecutor.execute(new ActionReceiveTask(data));
+	}
 
-		if (MqttServiceConstants.CONNECT_ACTION.equals(action)) {
-			connectAction(data);
-		}
-		else if (MqttServiceConstants.MESSAGE_ARRIVED_ACTION.equals(action)) {
-			messageArrivedAction(data);
-		}
-		else if (MqttServiceConstants.SUBSCRIBE_ACTION.equals(action)) {
-			subscribeAction(data);
-		}
-		else if (MqttServiceConstants.UNSUBSCRIBE_ACTION.equals(action)) {
-			unSubscribeAction(data);
-		}
-		else if (MqttServiceConstants.SEND_ACTION.equals(action)) {
-			sendAction(data);
-		}
-		else if (MqttServiceConstants.MESSAGE_DELIVERED_ACTION.equals(action)) {
-			messageDeliveredAction(data);
-		}
-		else if (MqttServiceConstants.ON_CONNECTION_LOST_ACTION
-				.equals(action)) {
-			connectionLostAction(data);
-		}
-		else if (MqttServiceConstants.DISCONNECT_ACTION.equals(action)) {
-			disconnected(data);
-		}
-		else if (MqttServiceConstants.TRACE_ACTION.equals(action)) {
-			traceAction(data);
-		}else{
-			mqttService.traceError(MqttService.TAG, "Callback action doesn't exist.");	
+	private class ActionReceiveTask implements Runnable {
+		private Bundle data;
+
+		public ActionReceiveTask(Bundle data) {
+			this.data = data;
 		}
 
+		@Override
+		public void run() {
+			String action = data.getString(MqttServiceConstants.CALLBACK_ACTION);
+
+			if (MqttServiceConstants.CONNECT_ACTION.equals(action)) {
+				connectAction(data);
+			}
+			else if (MqttServiceConstants.MESSAGE_ARRIVED_ACTION.equals(action)) {
+				messageArrivedAction(data);
+			}
+			else if (MqttServiceConstants.SUBSCRIBE_ACTION.equals(action)) {
+				subscribeAction(data);
+			}
+			else if (MqttServiceConstants.UNSUBSCRIBE_ACTION.equals(action)) {
+				unSubscribeAction(data);
+			}
+			else if (MqttServiceConstants.SEND_ACTION.equals(action)) {
+				sendAction(data);
+			}
+			else if (MqttServiceConstants.MESSAGE_DELIVERED_ACTION.equals(action)) {
+				messageDeliveredAction(data);
+			}
+			else if (MqttServiceConstants.ON_CONNECTION_LOST_ACTION
+					.equals(action)) {
+				connectionLostAction(data);
+			}
+			else if (MqttServiceConstants.DISCONNECT_ACTION.equals(action)) {
+				disconnected(data);
+			}
+			else if (MqttServiceConstants.TRACE_ACTION.equals(action)) {
+				traceAction(data);
+			}else{
+				mqttService.traceError(MqttService.TAG, "Callback action doesn't exist.");
+			}
+		}
 	}
 
 	/**
