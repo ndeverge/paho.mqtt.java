@@ -252,7 +252,7 @@ public class MqttService extends Service implements MqttTraceHandler {
 
 	// mapping from client handle strings to actual client connections.
 	private Map<String/* clientHandle */, MqttConnection/* client */> connections = new ConcurrentHashMap<String, MqttConnection>();
-  private LogToFile logger;
+  // private LogToFile logger;
 
   public MqttService() {
     super();
@@ -595,7 +595,11 @@ public class MqttService extends Service implements MqttTraceHandler {
   public void onCreate() {
     super.onCreate();
 
-    logger = new LogToFile(this);
+      /*
+       * create new logger sebaiknya menggunakan thread yang berbeda supaya
+       * tidak mengakibatkan ANR
+       */
+    // logger = new LogToFile(this);
 
     // create a binder that will let the Activity UI send
     // commands to the Service
