@@ -266,8 +266,8 @@ class MqttConnection implements MqttCallback {
 
 					// if connect fail ,try reconnect.
 					if(service.isOnline()){
-						if(isAuthenticationFailure()) {
-							authFailHandler.onApplicationAuthenticationFailure();
+						if(isAuthenticationFailure(exception)) {
+							authFailHandler.onApplicationAuthenticationFailure(exception);
 						} else {
 							connect(connectOptions, internel_invocationContext, connectActivityToken);
 						}
@@ -1026,8 +1026,8 @@ class MqttConnection implements MqttCallback {
 
 						waitUntilOnline(RECONNECT_DELAY);
 
-						if (isAuthenticationFailure()) {
-							authFailHandler.onApplicationAuthenticationFailure();
+						if (isAuthenticationFailure(exception)) {
+							authFailHandler.onApplicationAuthenticationFailure(exception);
 						} else {
 							reconnect();
 						}
@@ -1054,9 +1054,9 @@ class MqttConnection implements MqttCallback {
 		this.isConnecting = isConnecting; 
 	}
 
-	private boolean isAuthenticationFailure() {
+	private boolean isAuthenticationFailure(Throwable exception) {
 		return (authFailHandler != null) &&
-				authFailHandler.isApplicationAuthenticationFailure();
+				authFailHandler.isApplicationAuthenticationFailure(exception);
 	}
 
 	public void recycleConnection() {
