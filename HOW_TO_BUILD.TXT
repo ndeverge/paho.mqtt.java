@@ -1,0 +1,3 @@
+export JAVA_HOME=`/usr/libexec/java_home -v '1.7*'`
+~/app/maven/bin/mvn clean compile package -DskipTests
+~/app/maven/bin/mvn deploy -DskipTests
